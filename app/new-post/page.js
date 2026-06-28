@@ -1,29 +1,55 @@
+'use client';
+
 import FormSubmit from "@/components/form-submit";
 import { storePost } from "@/lib/posts";
 import { redirect } from "next/navigation";
+import { useFormState } from "react-dom";
 
 export default function NewPostPage() {
+
+  
   async function createPost(formData) {
     "use server";
     const title = formData.get("title");
     const image = formData.get("image");
     const content = formData.get("content");
-
+    
+    let errors = [];
+    
+    if (!title || title.trim().length === 0) {
+      errors.push("Title Is Requiered.");
+    }
+    
+    if (!content || content.trim().length === 0) {
+      errors.push("Conetent Is Requiered.");
+    }
+    
+    if (!image) {
+      errors.push("Image Is Requiered.");
+    }
+    
     console.log(title, image, content);
+    
+    if(errors.length>0){
+      return { errors};
+    }
+    
     await storePost({
       imageUrl: "",
       title,
       content,
       userId: 1,
     });
-
+    
     redirect("/feed");
   }
 
+  const [state , formAction] =useFormState(createPost,{});
+  
   return (
     <>
       <h1>Create a new post</h1>
-      <form action={createPost}>
+      <form action={formAction}>
         <p className="form-control">
           <label htmlFor="title">Title</label>
           <input type="text" id="title" name="title" />
